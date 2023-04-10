@@ -6,53 +6,53 @@ import org.kontext.appdefine.context.AppContext
 
 class AppDefineDslTest {
 
+    class TestDefinition(context: AppContext): AppDefine(context, {
+        beans {
+            singleton {
+                TestSingleton(
+                        dependency1 = bean(),
+                        dependency2 = bean(),
+                        dependency3 = bean(),
+                )
+            }
+
+            singleton {
+                TestPrototypeBean(
+                        dependency = bean()
+                )
+            }
+
+            singleton {
+                YetAnotherTestSingleton()
+            }
+
+            singleton {
+                TestThreadLocalBean(
+                        dependency = bean()
+                )
+            }
+
+            /*
+            prototype {
+                TestPrototypeBean(
+                        dependency = bean<YetAnotherTestSingleton>()
+                )
+            }
+
+            threadConfined {
+                TestThreadLocalBean(
+                        dependency = bean<YetAnotherTestSingleton>()
+                )
+            }
+             */
+        }
+    })
+
     @Test
     fun applicationDefinitionRun() {
         val context = AppContext()
 
-        val testDefinition = AppDefine(context) {
-            beans {
-                singleton {
-                    TestSingleton(
-                            dependency1 = bean(),
-                            dependency2 = bean(),
-                            dependency3 = bean(),
-                    )
-                }
-
-                singleton {
-                    TestPrototypeBean(
-                        dependency = bean()
-                    )
-                }
-
-                singleton {
-                    YetAnotherTestSingleton()
-                }
-
-                singleton {
-                    TestThreadLocalBean(
-                        dependency = bean()
-                    )
-                }
-
-                /*
-                prototype {
-                    TestPrototypeBean(
-                            dependency = bean<YetAnotherTestSingleton>()
-                    )
-                }
-
-                threadConfined {
-                    TestThreadLocalBean(
-                            dependency = bean<YetAnotherTestSingleton>()
-                    )
-                }
-                 */
-            }
-        }
-
-        testDefinition.interpretDefinition()
+        TestDefinition(context).interpretDefinition()
 
         context.findBean(TestSingleton::class) shouldNotBe null
         context.findBean(TestPrototypeBean::class) shouldNotBe null
