@@ -11,6 +11,8 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
+    implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-assertions-core:5.5.5")
     testImplementation("com.squareup:kotlinpoet:1.13.0")

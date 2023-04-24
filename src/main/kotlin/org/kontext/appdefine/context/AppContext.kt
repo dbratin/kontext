@@ -6,19 +6,13 @@ import kotlin.reflect.KClass
 
 class AppContext {
 
-    private val singletons: MutableMap<BeanDescriptor<out Any>, Any> = HashMap()
+    private val singletons: MutableMap<BeanDescriptor<out Any>, BeanManager<out Any>> = HashMap()
     private var destroyed = false
 
-    fun <T : Any> addSingleton(bean: T) {
+    fun addSingleton(descriptor: BeanDescriptor<*>, beanManager: BeanManager<*>) {
         ensureNotDestroyed()
 
-        singletons[BeanDescriptor(bean::class)] = bean
-    }
-
-    fun <T : Any> addSingleton(descriptor: BeanDescriptor<T>, bean: T) {
-        ensureNotDestroyed()
-
-        singletons[descriptor] = bean
+        singletons[descriptor] = beanManager
     }
 
     fun <T : Any> getBean(kClass: KClass<T>): T {
@@ -29,19 +23,17 @@ class AppContext {
     fun <T : Any> findBean(kClass: KClass<T>): T? {
         ensureNotDestroyed()
 
-        return singletons[BeanDescriptor(kClass)] as T?
+        return singletons[BeanDescriptor(kClass)]?.getBean() as T?
     }
 
     fun destroy() {
         ensureNotDestroyed()
 
         for(beanDescriptor in HashSet(singletons.keys)) {
-            val bean = singletons[beanDescriptor] ?: continue
+            val beanManager = singletons[beanDescriptor] ?: continue
 
-            if(beanDescriptor.hasDestroyMethod()) {
-                swallowErrors { beanDescriptor.applyDestroyMethod(bean) }
-            } else if(bean is AutoCloseable) {
-                swallowErrors { bean.close() }
+            if(beanManager.hasDestroyMethod()) {
+                swallowErrors { beanManager.destroy() }
             }
 
             singletons.remove(beanDescriptor)

@@ -6,19 +6,30 @@ import org.kontext.appdefine.context.AppContext
 
 class AppDefineDslTest {
 
-    class TestDefinition(context: AppContext): AppDefine(context, {
+    class ImportedDefinition(context: AppContext) : AppDefine(context, {
+        beans {
+            singleton {
+                ImportedSingleton()
+            }
+        }
+    })
+
+    class TestDefinition(context: AppContext) : AppDefine(context, {
+        import(ImportedDefinition::class)
+
         beans {
             singleton {
                 TestSingleton(
-                        dependency1 = bean(),
-                        dependency2 = bean(),
-                        dependency3 = bean(),
+                    dependency1 = bean(),
+                    dependency2 = bean(),
+                    dependency3 = bean(),
+                    dependency4 = bean(),
                 )
             }
 
             singleton {
                 TestPrototypeBean(
-                        dependency = bean()
+                    dependency = bean()
                 )
             }
 
@@ -28,7 +39,7 @@ class AppDefineDslTest {
 
             singleton {
                 TestThreadLocalBean(
-                        dependency = bean()
+                    dependency = bean()
                 )
             }
 
@@ -65,6 +76,7 @@ class AppDefineDslTest {
         val dependency1: YetAnotherTestSingleton,
         val dependency2: TestPrototypeBean,
         val dependency3: TestThreadLocalBean,
+        val dependency4: ImportedSingleton,
     )
 
     data class TestThreadLocalBean(
@@ -76,4 +88,6 @@ class AppDefineDslTest {
     )
 
     class YetAnotherTestSingleton
+
+    class ImportedSingleton
 }
