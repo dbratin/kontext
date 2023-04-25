@@ -4,7 +4,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import org.kontext.appdefine.context.impl.AppContextDefault
-import org.kontext.appdefine.context.impl.BeanManagerDefault
+import org.kontext.appdefine.context.impl.BeanManagerSingletonDefault
 import org.kontext.appdefine.exceptions.AppContextDestroyedException
 import org.kontext.appdefine.exceptions.BeanNotFoundException
 
@@ -15,11 +15,11 @@ class AppContextDefaultTest {
         val context = AppContextDefault()
         context.registerSingleton(
             BeanDescriptor(BeanOne::class),
-            BeanManagerDefault(BeanOne::class, { BeanOne() })
+            BeanManagerSingletonDefault(BeanOne::class, { BeanOne() })
         )
         context.registerSingleton(
             BeanDescriptor(BeanTwo::class),
-            BeanManagerDefault(BeanTwo::class, { BeanTwo() })
+            BeanManagerSingletonDefault(BeanTwo::class, { BeanTwo() })
         )
         context.start()
 
@@ -42,15 +42,15 @@ class AppContextDefaultTest {
 
         context.registerSingleton(
             BeanDescriptor(BeanOne::class),
-            BeanManagerDefault(BeanOne::class, { BeanOne() })
+            BeanManagerSingletonDefault(BeanOne::class, { BeanOne() })
         )
         context.registerSingleton(
             BeanDescriptor(BeanTwo::class),
-            BeanManagerDefault(BeanTwo::class, { BeanTwo() })
+            BeanManagerSingletonDefault(BeanTwo::class, { BeanTwo() })
         )
         context.registerSingleton(
             BeanDescriptor(DestroyableBean::class),
-            BeanManagerDefault(DestroyableBean::class, { DestroyableBean() }, { destroyIt() })
+            BeanManagerSingletonDefault(DestroyableBean::class, { DestroyableBean() }, { destroyIt() })
         )
         context.start()
 
@@ -63,7 +63,7 @@ class AppContextDefaultTest {
         shouldThrow<AppContextDestroyedException> {
             context.registerSingleton(
                 BeanDescriptor(BeanTwo::class),
-                BeanManagerDefault(BeanTwo::class, { BeanTwo() })
+                BeanManagerSingletonDefault(BeanTwo::class, { BeanTwo() })
             )
         }
         shouldThrow<AppContextDestroyedException> {

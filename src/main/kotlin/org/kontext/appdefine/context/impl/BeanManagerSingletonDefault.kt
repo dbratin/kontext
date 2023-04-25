@@ -4,7 +4,7 @@ import org.kontext.appdefine.context.BeanManager
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
-class BeanManagerDefault<T : Any>(
+class BeanManagerSingletonDefault<T : Any>(
     private val kClass: KClass<T>,
     private val createMethod: () -> T,
     private val destroyMethod: (T.() -> Unit)? = null,

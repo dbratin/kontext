@@ -10,25 +10,25 @@ import kotlin.reflect.KClass
 
 class AppContextDefault : AppContext {
 
-    private val singletons: MutableMap<BeanDescriptor<out Any>, BeanManager<out Any>> = HashMap()
+    private val beanRegister: MutableMap<BeanDescriptor<out Any>, BeanManager<out Any>> = HashMap()
     private var destroyed = false
 
     fun registerSingleton(descriptor: BeanDescriptor<*>, beanManager: BeanManager<*>) {
         ensureNotDestroyed()
 
-        if(singletons.containsKey(descriptor))
+        if(beanRegister.containsKey(descriptor))
             throw BeanDeclaredTwiceException(descriptor)
 
-        singletons[descriptor] = beanManager
+        beanRegister[descriptor] = beanManager
     }
 
     @Suppress("UNCHECKED_CAST")
     fun <T : Any> findBeanManager(descriptor: BeanDescriptor<T>) : BeanManager<T>? {
-        return singletons[descriptor] as BeanManager<T>?
+        return beanRegister[descriptor] as BeanManager<T>?
     }
 
     fun start(): AppContextDefault {
-        for(e in singletons.entries) {
+        for(e in beanRegister.entries) {
             e.value.create()
         }
         return this
@@ -52,20 +52,20 @@ class AppContextDefault : AppContext {
     override fun <T : Any> findBean(beanDescriptor: BeanDescriptor<T>): T? {
         ensureNotDestroyed()
 
-        return singletons[beanDescriptor]?.bean() as T?
+        return beanRegister[beanDescriptor]?.bean() as T?
     }
 
     override fun destroy() {
         ensureNotDestroyed()
 
-        for(beanDescriptor in HashSet(singletons.keys)) {
-            val beanManager = singletons[beanDescriptor] ?: continue
+        for(beanDescriptor in HashSet(beanRegister.keys)) {
+            val beanManager = beanRegister[beanDescriptor] ?: continue
 
             if(beanManager.hasDestroyMethod()) {
                 swallowErrors { beanManager.destroy() }
             }
 
-            singletons.remove(beanDescriptor)
+            beanRegister.remove(beanDescriptor)
         }
         destroyed = true
     }
