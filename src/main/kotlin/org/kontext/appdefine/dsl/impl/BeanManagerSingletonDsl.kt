@@ -5,7 +5,7 @@ import org.kontext.appdefine.dsl.BeansDefine
 import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
-class BeanManagerDsl<T : Any>(
+class BeanManagerSingletonDsl<T : Any>(
     private val kClass: KClass<T>,
     private val hostingDefine: BeansDefine,
     private val createMethod: (BeansDefine.() -> T),

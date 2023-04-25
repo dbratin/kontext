@@ -30,22 +30,9 @@ class AppDefineDslTest {
             }
 
             singleton {
-                TestPrototypeBean(
-                    dependency = bean()
-                )
-            }
-
-            singleton {
                 YetAnotherTestSingleton()
             }
 
-            singleton {
-                TestThreadLocalBean(
-                    dependency = bean()
-                )
-            }
-
-            /*
             prototype {
                 TestPrototypeBean(
                         dependency = bean<YetAnotherTestSingleton>()
@@ -57,7 +44,6 @@ class AppDefineDslTest {
                         dependency = bean<YetAnotherTestSingleton>()
                 )
             }
-             */
         }
     })
 
