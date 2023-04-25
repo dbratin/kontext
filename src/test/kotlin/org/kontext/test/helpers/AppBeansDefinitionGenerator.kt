@@ -1,7 +1,7 @@
 package org.kontext.test.helpers
 
 import com.squareup.kotlinpoet.*
-import org.kontext.appdefine.context.AppContext
+import org.kontext.appdefine.context.impl.AppContextDefault
 import org.kontext.appdefine.dsl.AppDefine
 import java.nio.file.Path
 
@@ -36,7 +36,7 @@ class AppBeansDefinitionGenerator(private val sourceRoot: Path) {
                         TypeSpec.classBuilder(className)
                                 .primaryConstructor(
                                         FunSpec.constructorBuilder()
-                                                .addParameter("context", AppContext::class)
+                                                .addParameter("context", AppContextDefault::class)
                                                 .build()
                                 )
                                 .superclass(AppDefine::class)

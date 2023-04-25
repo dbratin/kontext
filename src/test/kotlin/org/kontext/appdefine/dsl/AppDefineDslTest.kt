@@ -2,11 +2,13 @@ package org.kontext.appdefine.dsl
 
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
-import org.kontext.appdefine.context.AppContext
+import org.kontext.appdefine.context.AppContextBuilder
+import org.kontext.appdefine.context.impl.AppContextDefault
+import org.kontext.appdefine.context.impl.AppContextDefaultBuilder
 
 class AppDefineDslTest {
 
-    class ImportedDefinition(context: AppContext) : AppDefine(context, {
+    class ImportedDefinition(builder: AppContextBuilder) : AppDefine(builder, {
         beans {
             singleton {
                 ImportedSingleton()
@@ -14,7 +16,7 @@ class AppDefineDslTest {
         }
     })
 
-    class TestDefinition(context: AppContext) : AppDefine(context, {
+    class TestDefinition(builder: AppContextBuilder) : AppDefine(builder, {
         import(ImportedDefinition::class)
 
         beans {
@@ -61,9 +63,11 @@ class AppDefineDslTest {
 
     @Test
     fun applicationDefinitionRun() {
-        val context = AppContext()
+        val builder = AppContextDefaultBuilder()
 
-        TestDefinition(context).interpretDefinition()
+        TestDefinition(builder).eval()
+
+        val context = builder.build()
 
         context.findBean(TestSingleton::class) shouldNotBe null
         context.findBean(TestPrototypeBean::class) shouldNotBe null

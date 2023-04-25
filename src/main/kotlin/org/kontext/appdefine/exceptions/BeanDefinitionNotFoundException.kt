@@ -1,3 +1,5 @@
 package org.kontext.appdefine.exceptions
 
-class BeanDefinitionNotFoundException : Exception()
+import org.kontext.appdefine.context.BeanDescriptor
+
+class BeanDefinitionNotFoundException(val beanDescriptor: BeanDescriptor<*>) : Exception()
