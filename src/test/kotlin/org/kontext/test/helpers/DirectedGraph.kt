@@ -23,6 +23,15 @@ class DirectedGraph<T : DirectedGraph.Node> {
     }
 
     fun getConnected(node: T): Set<T> = adjacentMatrix[node] ?: throw NodeNotFoundException(node)
+
+    fun findIncoming(node: T): Set<T> = adjacentMatrix.asSequence()
+        .filter { e -> e.value.contains(node) }
+        .map { e -> e.key }
+        .toSet()
+
+    fun findPath(nodeFrom: T, nodeTo: T): List<Node> {
+        return emptyList()
+    }
 }
 
 class NodeNotFoundException(val node: DirectedGraph.Node) : Exception()

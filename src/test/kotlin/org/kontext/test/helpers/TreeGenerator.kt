@@ -2,7 +2,7 @@ package org.kontext.test.helpers
 
 import kotlin.random.Random
 
-class GraphGenerator {
+class TreeGenerator {
     fun <T: DirectedGraph.Node> generateRandomTree(nodeCount: Int, childrenCountRange: IntRange, nodeSupplier: (Int) -> T): Tree<T> {
         val graph = DirectedGraph<T>()
         val nodesIndex = ArrayList<T>(nodeCount)

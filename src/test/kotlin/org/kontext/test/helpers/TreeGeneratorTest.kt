@@ -4,16 +4,17 @@ import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 
-class GraphGeneratorTest {
+class TreeGeneratorTest {
     @Test
     fun generateRandomTree() {
-        val generator = GraphGenerator()
+        val generator = TreeGenerator()
         val tree = generator.generateRandomTree(80, 1..10) { nodeNumber -> NumberedNode(nodeNumber) }
 
         tree.root.number shouldBe 0
         tree.graph.nodes shouldHaveSize 80
 
         assertHaveNoCycles(tree)
+        //visualize(tree.graph)
     }
 
     private fun assertHaveNoCycles(tree: Tree<NumberedNode>) {
@@ -30,6 +31,4 @@ class GraphGeneratorTest {
 
         visited shouldHaveSize tree.graph.nodes.size
     }
-
-    data class NumberedNode(val number: Int) : DirectedGraph.Node
 }
