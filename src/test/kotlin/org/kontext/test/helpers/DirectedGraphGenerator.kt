@@ -8,6 +8,16 @@ class DirectedGraphGenerator {
         connRange: IntRange,
         nodeSupplier: (Int) -> T,
     ): DirectedGraph<T> {
+        return generateConnectedGraph(nodeCount, nodeSupplier, connRange).apply {
+            removeCycles()
+        }
+    }
+
+    fun <T : DirectedGraph.Node> generateConnectedGraph(
+        nodeCount: Int,
+        nodeSupplier: (Int) -> T,
+        connRange: IntRange
+    ): DirectedGraph<T> {
         val graph = DirectedGraph<T>()
         for (nodeNumber in 0 until nodeCount) {
             val newNode = nodeSupplier(nodeNumber)
@@ -20,7 +30,7 @@ class DirectedGraphGenerator {
             val connCount = generateConnCount(connRange)
             val avoidNodes: Set<T> = HashSet<T>().apply {
                 add(nodeFrom)
-                addAll(graph.findIncoming(nodeFrom))
+                addAll(graph.findReferring(nodeFrom))
             }
             for (nodeTo in pickNodesToConnect(connCount, nodesList, avoidNodes)) {
                 graph.connect(nodeFrom, nodeTo)
@@ -57,4 +67,29 @@ class DirectedGraphGenerator {
     }
 
     private fun generateConnCount(conRange: IntRange) = Random.nextInt(conRange.first, conRange.last)
+
+    private fun <T : DirectedGraph.Node> DirectedGraph<T>.removeCycles() {
+        for (node in nodes) {
+            val referringNodes = findReferring(node)
+            val visited = HashSet<T>().apply { add(node) }
+            val referred = removeCycles(node, referringNodes, visited)
+
+            visited.addAll(referred)
+        }
+    }
+
+    private fun <T : DirectedGraph.Node> DirectedGraph<T>.removeCycles(
+        node: T,
+        referringNodes: Set<T>,
+        visited: Set<T>,
+    ): Set<T> {
+        val referred = getConnected(node).asSequence().filter { !visited.contains(it) }.toSet()
+        val toDelete = referringNodes.asSequence()
+            .filter { referred.contains(it) }
+            .toList()
+        for (delete in toDelete) {
+            removeEdge(delete, node)
+        }
+        return referred
+    }
 }

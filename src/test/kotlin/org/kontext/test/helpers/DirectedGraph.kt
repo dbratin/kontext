@@ -22,9 +22,19 @@ class DirectedGraph<T : DirectedGraph.Node> {
         adjacentMatrix[nodeFrom]?.add(nodeTo)
     }
 
+    fun removeEdge(nodeFrom: T, nodeTo: T) {
+        if(!adjacentMatrix.contains(nodeFrom))
+            throw NodeNotFoundException(nodeFrom)
+
+        if(!adjacentMatrix.contains(nodeTo))
+            throw NodeNotFoundException(nodeTo)
+
+        adjacentMatrix[nodeFrom]?.remove(nodeTo)
+    }
+
     fun getConnected(node: T): Set<T> = adjacentMatrix[node] ?: throw NodeNotFoundException(node)
 
-    fun findIncoming(node: T): Set<T> = adjacentMatrix.asSequence()
+    fun findReferring(node: T): Set<T> = adjacentMatrix.asSequence()
         .filter { e -> e.value.contains(node) }
         .map { e -> e.key }
         .toSet()
