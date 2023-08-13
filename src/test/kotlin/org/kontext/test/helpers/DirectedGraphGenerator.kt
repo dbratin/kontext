@@ -1,5 +1,6 @@
 package org.kontext.test.helpers
 
+import java.util.*
 import kotlin.random.Random
 
 class DirectedGraphGenerator {
@@ -8,88 +9,57 @@ class DirectedGraphGenerator {
         connRange: IntRange,
         nodeSupplier: (Int) -> T,
     ): DirectedGraph<T> {
-        return generateConnectedGraph(nodeCount, nodeSupplier, connRange).apply {
-            removeCycles()
-        }
-    }
+        val graph = createGraphWithNodes(nodeCount, nodeSupplier)
 
-    fun <T : DirectedGraph.Node> generateConnectedGraph(
-        nodeCount: Int,
-        nodeSupplier: (Int) -> T,
-        connRange: IntRange
-    ): DirectedGraph<T> {
-        val graph = DirectedGraph<T>()
-        for (nodeNumber in 0 until nodeCount) {
-            val newNode = nodeSupplier(nodeNumber)
-            graph.add(newNode)
+        val shuffledNodes = LinkedList(graph.nodes).apply { shuffle() }
+        val sourceNodes = ArrayList<NodeAndCounter<T>>()
+
+        val greatAncestorsCount = (nodeCount / connRange.last).takeIf { it > 0 } ?: 1
+        for (i in 1..greatAncestorsCount) {
+            sourceNodes.add(NodeAndCounter(shuffledNodes.pollFirst(), generateConnCount(connRange)))
         }
 
-        val nodesList = ArrayList(graph.nodes)
+        while(shuffledNodes.isNotEmpty()) {
+            val target = shuffledNodes.pollFirst()
+            for(i in 1..generateConnCount(connRange)) {
+                var sourceNodeCounter = pickRandom(sourceNodes)!!
+                var attempts = 0
+                while(!sourceNodeCounter.havePlace() && attempts < sourceNodes.size) {
+                    sourceNodeCounter = pickRandom(sourceNodes)!!
+                    attempts++
+                }
 
-        for (nodeFrom in graph.nodes) {
-            val connCount = generateConnCount(connRange)
-            val avoidNodes: Set<T> = HashSet<T>().apply {
-                add(nodeFrom)
-                addAll(graph.findReferring(nodeFrom))
-            }
-            for (nodeTo in pickNodesToConnect(connCount, nodesList, avoidNodes)) {
-                graph.connect(nodeFrom, nodeTo)
+                graph.connect(sourceNodeCounter.node, target)
+
+                sourceNodeCounter.occupy()
+                sourceNodes.add(NodeAndCounter(target, generateConnCount(connRange)))
             }
         }
 
         return graph
     }
 
-    private fun <T : DirectedGraph.Node> pickNodesToConnect(
-        connCount: Int,
-        allNodes: ArrayList<T>,
-        avoidNodes: Set<T>
-    ): Set<T> {
-        val nodesToConnect = HashSet<T>()
-        for (i in 0 until connCount) {
-            var num = 0
-            while (num < allNodes.size * 2) {
-                val index = Random.nextInt(0, allNodes.size - 1)
-                val node = allNodes[index]
-                if (avoidNodes.contains(node) || nodesToConnect.contains(node)) {
-                    num++
-                    continue
-                } else {
-                    nodesToConnect.add(node)
-                    break
-                }
-            }
-            if (num >= allNodes.size * 2) {
-                throw IllegalStateException("Too much attempts to pick node to connect")
-            }
+    private fun <T : DirectedGraph.Node> createGraphWithNodes(
+        nodeCount: Int,
+        nodeSupplier: (Int) -> T
+    ): DirectedGraph<T> {
+        val graph = DirectedGraph<T>()
+        for (nodeNumber in 0 until nodeCount) {
+            val newNode = nodeSupplier(nodeNumber)
+            graph.add(newNode)
         }
-        return nodesToConnect
+        return graph
     }
 
-    private fun generateConnCount(conRange: IntRange) = Random.nextInt(conRange.first, conRange.last)
+    private fun generateConnCount(conRange: IntRange) = Random.nextInt(conRange.first, conRange.last).takeIf { it > 0 } ?: 1
 
-    private fun <T : DirectedGraph.Node> DirectedGraph<T>.removeCycles() {
-        for (node in nodes) {
-            val referringNodes = findReferring(node)
-            val visited = HashSet<T>().apply { add(node) }
-            val referred = removeCycles(node, referringNodes, visited)
+    private fun <T> pickRandom(collection: List<T>): T? =
+        collection.takeIf { it.isNotEmpty() }?.get(Random.nextInt(collection.size))
 
-            visited.addAll(referred)
-        }
-    }
+    private data class NodeAndCounter<T>(val node: T, val places: Int) {
+        var occupied = 0
+        fun havePlace() = occupied < places
 
-    private fun <T : DirectedGraph.Node> DirectedGraph<T>.removeCycles(
-        node: T,
-        referringNodes: Set<T>,
-        visited: Set<T>,
-    ): Set<T> {
-        val referred = getConnected(node).asSequence().filter { !visited.contains(it) }.toSet()
-        val toDelete = referringNodes.asSequence()
-            .filter { referred.contains(it) }
-            .toList()
-        for (delete in toDelete) {
-            removeEdge(delete, node)
-        }
-        return referred
+        fun occupy() { occupied++ }
     }
 }
