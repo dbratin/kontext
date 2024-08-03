@@ -1,2 +1,2 @@
 # kontext
-A mini framework purposed for descibing application configuration
+A mini framework purposed for describing application configuration
